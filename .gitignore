@@ -1,0 +1,68 @@
+# ===========================================
+# ZOL Project - Production .gitignore
+# ===========================================
+
+# ============ Root Level ============
+.DS_Store
+*.log
+.env
+.env.local
+.env.*.local
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.kiro/
+
+# Test ledger (local Solana validator data)
+test-ledger/
+
+# Documentation files (keep only essential)
+blueprint.pdf
+
+# ============ Frontend (Next.js) ============
+Frontend/.next/
+Frontend/.swc/
+Frontend/node_modules/
+Frontend/.env
+Frontend/.env.local
+Frontend/.env.*.local
+Frontend/.DS_Store
+Frontend/*.log
+Frontend/npm-debug.log*
+Frontend/yarn-debug.log*
+Frontend/yarn-error.log*
+Frontend/.pnpm-debug.log*
+
+# Build outputs
+Frontend/out/
+Frontend/build/
+Frontend/.turbo/
+
+# Testing
+Frontend/coverage/
+
+# TypeScript
+Frontend/*.tsbuildinfo
+
+# Keypairs & Secrets (IMPORTANT - never commit these!)
+Frontend/faucet-authority.json
+Frontend/mock-usdc-config.json
+
+# ============ Solana Contract (Anchor) ============
+zol-contract/.anchor/
+zol-contract/target/
+zol-contract/node_modules/
+zol-contract/test-ledger/
+zol-contract/.DS_Store
+
+# Keypairs (never commit!)
+zol-contract/**/*-keypair.json
+
+# ============ General ============
+*.pem
+*.key
+*-keypair.json
+*.secret

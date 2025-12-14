@@ -1,0 +1,568 @@
+{
+  "address": "Hxmj5SzEPU4gJkbQHWaaXHEQN7SK1CKEuUFhvUf8qBAv",
+  "metadata": {
+    "name": "zol_contract",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "address": "Hxmj5SzEPU4gJkbQHWaaXHEQN7SK1CKEuUFhvUf8qBAv"
+  },
+  "instructions": [
+    {
+      "name": "initializeGame",
+      "discriminator": [44, 62, 102, 247, 126, 208, 130, 215],
+      "accounts": [
+        {
+          "name": "gameState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initVault",
+      "discriminator": [192, 155, 103, 232, 227, 22, 53, 165],
+      "accounts": [
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "usdcMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "registerUser",
+      "discriminator": [2, 241, 150, 223, 99, 214, 116, 97],
+      "accounts": [
+        {
+          "name": "userPosition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gameState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "factionId",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "deposit",
+      "discriminator": [242, 35, 198, 137, 82, 225, 242, 182],
+      "accounts": [
+        {
+          "name": "userPosition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gameState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userUsdc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdraw",
+      "discriminator": [183, 18, 70, 156, 148, 109, 161, 34],
+      "accounts": [
+        {
+          "name": "userPosition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gameState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userUsdc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateAutomation",
+      "discriminator": [241, 23, 38, 245, 51, 30, 100, 111],
+      "accounts": [
+        {
+          "name": "userPosition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "slot1",
+          "type": {
+            "defined": "AutomationRule"
+          }
+        },
+        {
+          "name": "slot2",
+          "type": {
+            "defined": "AutomationRule"
+          }
+        },
+        {
+          "name": "fallback",
+          "type": {
+            "defined": "FallbackAction"
+          }
+        }
+      ]
+    },
+    {
+      "name": "resolveEpoch",
+      "discriminator": [127, 233, 72, 190, 252, 134, 239, 218],
+      "accounts": [
+        {
+          "name": "gameState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "executeSettlement",
+      "discriminator": [237, 120, 82, 62, 224, 193, 147, 137],
+      "accounts": [
+        {
+          "name": "userPosition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gameState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userUsdc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "shopTreasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "yieldAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "startNewEpoch",
+      "discriminator": [37, 124, 144, 12, 253, 60, 22, 222],
+      "accounts": [
+        {
+          "name": "gameState",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "injectYield",
+      "discriminator": [44, 53, 228, 21, 179, 167, 196, 63],
+      "accounts": [
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "providerUsdc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "provider",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GameState",
+      "discriminator": [144, 94, 208, 172, 248, 99, 134, 120],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "publicKey"
+          },
+          {
+            "name": "epochNumber",
+            "type": "u64"
+          },
+          {
+            "name": "epochStartTs",
+            "type": "i64"
+          },
+          {
+            "name": "epochEndTs",
+            "type": "i64"
+          },
+          {
+            "name": "totalTvl",
+            "type": "u64"
+          },
+          {
+            "name": "factions",
+            "type": {
+              "array": [
+                {
+                  "defined": "FactionState"
+                },
+                3
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": "GameStatus"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserPosition",
+      "discriminator": [251, 248, 209, 245, 83, 234, 17, 27],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "factionId",
+            "type": "u8"
+          },
+          {
+            "name": "depositedAmount",
+            "type": "u64"
+          },
+          {
+            "name": "lastDepositEpoch",
+            "type": "u64"
+          },
+          {
+            "name": "automationSettings",
+            "type": {
+              "defined": "AutomationSettings"
+            }
+          },
+          {
+            "name": "inventory",
+            "type": {
+              "defined": "UserInventory"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "FactionState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u8"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "tvl",
+            "type": "u64"
+          },
+          {
+            "name": "score",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AutomationSettings",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "prioritySlot1",
+            "type": {
+              "defined": "AutomationRule"
+            }
+          },
+          {
+            "name": "prioritySlot2",
+            "type": {
+              "defined": "AutomationRule"
+            }
+          },
+          {
+            "name": "fallbackAction",
+            "type": {
+              "defined": "FallbackAction"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AutomationRule",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "itemId",
+            "type": "u8"
+          },
+          {
+            "name": "threshold",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserInventory",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "swordCount",
+            "type": "u64"
+          },
+          {
+            "name": "shieldCount",
+            "type": "u64"
+          },
+          {
+            "name": "spyglassCount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GameStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Settlement"
+          },
+          {
+            "name": "Paused"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FallbackAction",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "AutoCompound"
+          },
+          {
+            "name": "SendToWallet"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PayoutPreference",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "SendToWallet"
+          },
+          {
+            "name": "AutoCompound"
+          },
+          {
+            "name": "BuyItem"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidFaction",
+      "msg": "Invalid faction ID (must be 0-2)"
+    },
+    {
+      "code": 6001,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds for withdrawal"
+    },
+    {
+      "code": 6002,
+      "name": "EpochNotEnded",
+      "msg": "Epoch has not ended yet"
+    }
+  ]
+}
