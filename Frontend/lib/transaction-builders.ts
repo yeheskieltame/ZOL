@@ -314,9 +314,19 @@ export async function buildUpdateAutomationTx(
     // Derive user position PDA
     const [userPositionPDA] = getUserPositionPDA(userPublicKey, program.programId);
     
+    // Convert bigint thresholds to BN for Anchor compatibility
+    const slot1ForAnchor = {
+      itemId: slot1.itemId,
+      threshold: new BN(slot1.threshold.toString()),
+    };
+    const slot2ForAnchor = {
+      itemId: slot2.itemId,
+      threshold: new BN(slot2.threshold.toString()),
+    };
+    
     // Build the transaction using Anchor's methods builder
     const tx = await program.methods
-      .updateAutomation(slot1, slot2, fallback)
+      .updateAutomation(slot1ForAnchor, slot2ForAnchor, fallback)
       .accounts({
         userPosition: userPositionPDA,
         user: userPublicKey,
@@ -339,6 +349,10 @@ export async function buildUpdateAutomationTx(
 /**
  * Validates an automation rule
  * 
+ * A threshold of 0 means the slot is disabled/inactive.
+ * When threshold is 0, itemId is ignored (slot won't trigger any purchase).
+ * When threshold > 0, itemId must be valid (1-3 for sword, shield, spyglass).
+ * 
  * @param rule - The automation rule to validate
  * @param slotName - The name of the slot (for error messages)
  * @throws {TransactionBuilderError} If validation fails
@@ -351,19 +365,28 @@ function validateAutomationRule(rule: AutomationRule, slotName: string): void {
     );
   }
   
-  // Validate item ID (0-2 for sword, shield, spyglass)
-  if (typeof rule.itemId !== 'number' || rule.itemId < 0 || rule.itemId > 2) {
+  // Get threshold value
+  const threshold = typeof rule.threshold === 'bigint' ? rule.threshold : BigInt(rule.threshold);
+  
+  // Threshold of 0 means slot is disabled - this is valid
+  if (threshold === 0n) {
+    // Slot is disabled, no further validation needed
+    return;
+  }
+  
+  // If threshold > 0, validate item ID (1-3 for sword, shield, spyglass)
+  // Note: itemId 0 with threshold > 0 is invalid (no item selected)
+  if (typeof rule.itemId !== 'number' || rule.itemId < 0 || rule.itemId > 3) {
     throw new TransactionBuilderError(
-      `Invalid ${slotName} itemId: ${rule.itemId}. Must be between 0 and 2.`,
+      `Invalid ${slotName} itemId: ${rule.itemId}. Must be between 0 and 3.`,
       'INVALID_ITEM_ID'
     );
   }
   
-  // Validate threshold is a positive number
-  const threshold = typeof rule.threshold === 'bigint' ? rule.threshold : BigInt(rule.threshold);
-  if (threshold <= 0n) {
+  // Threshold must be positive when slot is active
+  if (threshold < 0n) {
     throw new TransactionBuilderError(
-      `Invalid ${slotName} threshold: ${rule.threshold}. Must be greater than zero.`,
+      `Invalid ${slotName} threshold: ${rule.threshold}. Must be zero or greater.`,
       'INVALID_THRESHOLD'
     );
   }

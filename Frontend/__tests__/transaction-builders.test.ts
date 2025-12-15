@@ -290,11 +290,14 @@ describe('Transaction Builders', () => {
       );
 
       expect(tx).toBeInstanceOf(Transaction);
-      expect(mockProgram.methods.updateAutomation).toHaveBeenCalledWith(
-        validSlot1,
-        validSlot2,
-        validFallback
-      );
+      // Verify updateAutomation was called with converted BN thresholds
+      expect(mockProgram.methods.updateAutomation).toHaveBeenCalled();
+      const callArgs = (mockProgram.methods.updateAutomation as jest.Mock).mock.calls[0];
+      expect(callArgs[0].itemId).toBe(validSlot1.itemId);
+      expect(callArgs[0].threshold.toString()).toBe(validSlot1.threshold.toString());
+      expect(callArgs[1].itemId).toBe(validSlot2.itemId);
+      expect(callArgs[1].threshold.toString()).toBe(validSlot2.threshold.toString());
+      expect(callArgs[2]).toEqual(validFallback);
     });
 
     it('should accept sendToWallet fallback action', async () => {
@@ -311,7 +314,8 @@ describe('Transaction Builders', () => {
     });
 
     it('should throw error for invalid slot1 itemId', async () => {
-      const invalidSlot: AutomationRule = { itemId: 3, threshold: BigInt(10000000) };
+      // itemId 4 is invalid (valid range is 0-3)
+      const invalidSlot: AutomationRule = { itemId: 4, threshold: BigInt(10000000) };
       
       await expect(buildUpdateAutomationTx(
         mockProgram,
@@ -362,24 +366,19 @@ describe('Transaction Builders', () => {
       )).rejects.toThrow('Invalid slot2 itemId');
     });
 
-    it('should throw error for zero threshold in slot1', async () => {
-      const invalidSlot: AutomationRule = { itemId: 0, threshold: BigInt(0) };
+    it('should allow zero threshold in slot1 (disabled slot)', async () => {
+      // Zero threshold means the slot is disabled - this is valid
+      const disabledSlot: AutomationRule = { itemId: 0, threshold: BigInt(0) };
       
-      await expect(buildUpdateAutomationTx(
+      const tx = await buildUpdateAutomationTx(
         mockProgram,
         userPublicKey,
-        invalidSlot,
+        disabledSlot,
         validSlot2,
         validFallback
-      )).rejects.toThrow(TransactionBuilderError);
+      );
       
-      await expect(buildUpdateAutomationTx(
-        mockProgram,
-        userPublicKey,
-        invalidSlot,
-        validSlot2,
-        validFallback
-      )).rejects.toThrow('Invalid slot1 threshold');
+      expect(tx).toBeInstanceOf(Transaction);
     });
 
     it('should throw error for negative threshold in slot2', async () => {

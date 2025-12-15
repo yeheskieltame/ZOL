@@ -71,23 +71,23 @@ const invalidAmountArbitrary = fc.oneof(
   fc.integer({ min: -1000000, max: -1 })
 );
 
-// Generator for valid item IDs (0-2 for sword, shield, spyglass)
-const validItemIdArbitrary = fc.integer({ min: 0, max: 2 });
+// Generator for valid item IDs (0-3 for none, sword, shield, spyglass)
+const validItemIdArbitrary = fc.integer({ min: 0, max: 3 });
 
-// Generator for invalid item IDs
+// Generator for invalid item IDs (outside 0-3 range)
 const invalidItemIdArbitrary = fc.oneof(
   fc.integer({ min: -1000, max: -1 }),
-  fc.integer({ min: 3, max: 1000 })
+  fc.integer({ min: 4, max: 1000 })
 );
 
-// Generator for valid thresholds (positive bigints)
-const validThresholdArbitrary = fc.bigInt({ min: 1n, max: 1000000000000n });
+// Generator for valid thresholds (zero for disabled, positive for active)
+const validThresholdArbitrary = fc.bigInt({ min: 0n, max: 1000000000000n });
 
-// Generator for invalid thresholds (zero or negative)
-const invalidThresholdArbitrary = fc.oneof(
-  fc.constant(0n),
-  fc.bigInt({ min: -1000000n, max: -1n })
-);
+// Generator for positive thresholds only (for active slots)
+const positiveThresholdArbitrary = fc.bigInt({ min: 1n, max: 1000000000000n });
+
+// Generator for invalid thresholds (negative only - zero is now valid for disabled slots)
+const invalidThresholdArbitrary = fc.bigInt({ min: -1000000n, max: -1n });
 
 // Generator for valid AutomationRule
 const validAutomationRuleArbitrary = fc.record({
@@ -809,7 +809,14 @@ describe('Transaction Builders Property Tests', () => {
             const tx = await buildUpdateAutomationTx(mockProgram, userPublicKey, slot1, slot2, fallback);
             
             expect(tx).toBeInstanceOf(Transaction);
-            expect(mockProgram.methods.updateAutomation).toHaveBeenCalledWith(slot1, slot2, fallback);
+            // Verify updateAutomation was called with converted BN thresholds
+            expect(mockProgram.methods.updateAutomation).toHaveBeenCalled();
+            const callArgs = (mockProgram.methods.updateAutomation as jest.Mock).mock.calls[0];
+            expect(callArgs[0].itemId).toBe(slot1.itemId);
+            expect(callArgs[0].threshold.toString()).toBe(slot1.threshold.toString());
+            expect(callArgs[1].itemId).toBe(slot2.itemId);
+            expect(callArgs[1].threshold.toString()).toBe(slot2.threshold.toString());
+            expect(callArgs[2]).toEqual(fallback);
           }
         ),
         { numRuns: 100 }
@@ -842,11 +849,12 @@ describe('Transaction Builders Property Tests', () => {
         fc.asyncProperty(
           publicKeyArbitrary,
           invalidItemIdArbitrary,
-          validThresholdArbitrary,
+          positiveThresholdArbitrary, // Use positive threshold to trigger itemId validation
           validAutomationRuleArbitrary,
           validFallbackActionArbitrary,
           async (userPublicKey, invalidItemId, threshold, validSlot, fallback) => {
             const mockProgram = createMockProgram();
+            // Only validate itemId when threshold > 0 (active slot)
             const invalidSlot: AutomationRule = { itemId: invalidItemId, threshold };
             
             await expect(buildUpdateAutomationTx(mockProgram, userPublicKey, invalidSlot, validSlot, fallback))
@@ -860,16 +868,18 @@ describe('Transaction Builders Property Tests', () => {
       );
     });
 
-    it('should validate thresholds in automation rules', async () => {
+    it('should validate negative thresholds in automation rules', async () => {
       await fc.assert(
         fc.asyncProperty(
           publicKeyArbitrary,
           validItemIdArbitrary,
-          invalidThresholdArbitrary,
+          invalidThresholdArbitrary, // Only negative values now
           validAutomationRuleArbitrary,
           validFallbackActionArbitrary,
           async (userPublicKey, itemId, invalidThreshold, validSlot, fallback) => {
             const mockProgram = createMockProgram();
+            // Only test with positive threshold to trigger itemId validation
+            // Negative thresholds should fail
             const invalidSlot: AutomationRule = { itemId, threshold: invalidThreshold };
             
             await expect(buildUpdateAutomationTx(mockProgram, userPublicKey, invalidSlot, validSlot, fallback))
@@ -880,6 +890,26 @@ describe('Transaction Builders Property Tests', () => {
           }
         ),
         { numRuns: 100 }
+      );
+    });
+
+    it('should allow zero threshold (disabled slot)', async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          publicKeyArbitrary,
+          validItemIdArbitrary,
+          validAutomationRuleArbitrary,
+          validFallbackActionArbitrary,
+          async (userPublicKey, itemId, validSlot, fallback) => {
+            const mockProgram = createMockProgram();
+            // Zero threshold means disabled slot - should be valid
+            const disabledSlot: AutomationRule = { itemId, threshold: 0n };
+            
+            const tx = await buildUpdateAutomationTx(mockProgram, userPublicKey, disabledSlot, validSlot, fallback);
+            expect(tx).toBeInstanceOf(Transaction);
+          }
+        ),
+        { numRuns: 50 }
       );
     });
 
@@ -928,7 +958,14 @@ describe('Transaction Builders Property Tests', () => {
             
             await buildUpdateAutomationTx(mockProgram, userPublicKey, slot1, slot2, fallback);
             
-            expect(mockProgram.methods.updateAutomation).toHaveBeenCalledWith(slot1, slot2, fallback);
+            // Verify updateAutomation was called with converted BN thresholds
+            expect(mockProgram.methods.updateAutomation).toHaveBeenCalled();
+            const callArgs = (mockProgram.methods.updateAutomation as jest.Mock).mock.calls[0];
+            expect(callArgs[0].itemId).toBe(slot1.itemId);
+            expect(callArgs[0].threshold.toString()).toBe(slot1.threshold.toString());
+            expect(callArgs[1].itemId).toBe(slot2.itemId);
+            expect(callArgs[1].threshold.toString()).toBe(slot2.threshold.toString());
+            expect(callArgs[2]).toEqual(fallback);
           }
         ),
         { numRuns: 100 }
@@ -991,9 +1028,12 @@ describe('Transaction Builders Property Tests', () => {
             
             await buildUpdateAutomationTx(mockProgram, userPublicKey, slot1, slot2, fallback);
             
+            // Verify properties are preserved (threshold converted to BN)
             const callArgs = (mockProgram.methods.updateAutomation as jest.Mock).mock.calls[0];
-            expect(callArgs[0]).toEqual(slot1);
-            expect(callArgs[1]).toEqual(slot2);
+            expect(callArgs[0].itemId).toBe(slot1.itemId);
+            expect(callArgs[0].threshold.toString()).toBe(slot1.threshold.toString());
+            expect(callArgs[1].itemId).toBe(slot2.itemId);
+            expect(callArgs[1].threshold.toString()).toBe(slot2.threshold.toString());
             expect(callArgs[2]).toEqual(fallback);
           }
         ),
@@ -1007,10 +1047,11 @@ describe('Transaction Builders Property Tests', () => {
           publicKeyArbitrary,
           validAutomationRuleArbitrary,
           invalidItemIdArbitrary,
-          validThresholdArbitrary,
+          positiveThresholdArbitrary, // Use positive threshold to trigger itemId validation
           validFallbackActionArbitrary,
           async (userPublicKey, validSlot, invalidItemId, threshold, fallback) => {
             const mockProgram = createMockProgram();
+            // Only validate itemId when threshold > 0 (active slot)
             const invalidSlot: AutomationRule = { itemId: invalidItemId, threshold };
             
             try {
